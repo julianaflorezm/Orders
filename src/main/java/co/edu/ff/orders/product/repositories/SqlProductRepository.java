@@ -23,10 +23,10 @@ public class SqlProductRepository implements ProductRepository {
         ProductId id = ProductId.of(resultSet.getLong("id"));
         Name name = Name.of(resultSet.getString("name"));
         Description description = Description.of(resultSet.getString("description"));
-        BasePrice basePrice = BasePrice.of(resultSet.getBigDecimal("baseprice"));
-        TaxRate taxRate = TaxRate.of(resultSet.getBigDecimal("taxrate"));
+        BasePrice basePrice = BasePrice.of(resultSet.getBigDecimal("base_price"));
+        TaxRate taxRate = TaxRate.of(resultSet.getBigDecimal("tax_rate"));
         ProductStatus status = ProductStatus.valueOf(resultSet.getString("status"));
-        InventoryQuantity inventoryQuantity = InventoryQuantity.of(resultSet.getInt("inventoryquantity"));
+        InventoryQuantity inventoryQuantity = InventoryQuantity.of(resultSet.getInt("inventory_quantity"));
         return Product.from(id, name, description, basePrice, taxRate, status, inventoryQuantity);
     };
 
@@ -36,10 +36,10 @@ public class SqlProductRepository implements ProductRepository {
         Map<String, Object> parameters = new HashMap<>();
         parameters.put("name", product.getName().getValue());
         parameters.put("description", product.getDescription().getValue());
-        parameters.put("baseprice", product.getBasePrice().getValue());
-        parameters.put("taxrate", product.getTaxRate().getValue());
+        parameters.put("base_price", product.getBasePrice().getValue());
+        parameters.put("tax_rate", product.getTaxRate().getValue());
         parameters.put("status", product.getProductStatus().toString());
-        parameters.put("inventoryquantity", product.getInventoryQuantity().getValue());
+        parameters.put("inventory_quantity", product.getInventoryQuantity().getValue());
 
         Number number = simpleJdbcInsert.executeAndReturnKey(parameters);
         //Long id = (long)number; //error de casteo de java.Integer a Java.long
@@ -58,7 +58,7 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public Optional<ProductOperation> findByName(Name name) {
-        String SQL = "SELECT id, name, description, baseprice, taxrate, status, inventoryquantity FROM products WHERE name = ?";
+        String SQL = "SELECT id, name, description, base_price, tax_rate, status, inventory_quantity FROM products WHERE name = ?";
         Object[] objects = {name.getValue()};
         try{
             Product productExistence = jdbcTemplate.queryForObject(SQL, objects, mapper);
@@ -70,7 +70,7 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public Optional<ProductOperation> findById(ProductId id) {
-        String SQL = "SELECT id, name, description, baseprice, taxrate, status, inventoryquantity FROM products WHERE id = ?";
+        String SQL = "SELECT id, name, description, base_price, tax_rate, status, inventory_quantity FROM products WHERE id = ?";
         Object[] objects = {id.getValue()};
         try{
             Product productExistence = jdbcTemplate.queryForObject(SQL, objects, mapper);
@@ -82,14 +82,14 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public List<Product> findAll() {
-        String SQL = "SELECT id, name, description, baseprice, taxrate, status, inventoryquantity FROM products";
+        String SQL = "SELECT id, name, description, base_price, tax_rate, status, inventory_quantity FROM products";
         List<Product> products = jdbcTemplate.query(SQL, mapper);
         return products;
     }
 
     @Override
     public ProductOperation updateOne(ProductId id, ProductOperationRequest product) {
-        String SQL = "UPDATE products SET name = ?, description = ?, baseprice = ?, taxrate = ?, status = ?, inventoryquantity = ?" +
+        String SQL = "UPDATE products SET name = ?, description = ?, base_price = ?, tax_rate = ?, status = ?, inventory_quantity = ?" +
                 "WHERE id = ?";
         Number number = jdbcTemplate.update(SQL,
                     product.getName().getValue(),
