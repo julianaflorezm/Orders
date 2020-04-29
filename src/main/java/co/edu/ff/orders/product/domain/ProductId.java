@@ -4,7 +4,6 @@ import co.edu.ff.orders.common.Preconditions;
 import co.edu.ff.orders.serialization.IntegerSerializable;
 import co.edu.ff.orders.serialization.LongSerializable;
 import lombok.Value;
-import org.apache.commons.lang3.StringUtils;
 
 @Value(staticConstructor = "of")
 public class ProductId implements LongSerializable {

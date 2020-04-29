@@ -18,7 +18,7 @@ public class ProductRepositoryConfiguration {
     public ProductRepository productRepository(JdbcTemplate jdbcTemplate, DataSource dataSource) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
                 .withTableName("PRODUCTS")
-                .usingGeneratedKeyColumns("ID");
+                .usingGeneratedKeyColumns("id");
 
         return new SqlProductRepository(jdbcTemplate, simpleJdbcInsert);
     }

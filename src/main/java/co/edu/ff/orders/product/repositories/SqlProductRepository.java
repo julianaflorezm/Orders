@@ -2,8 +2,6 @@ package co.edu.ff.orders.product.repositories;
 
 import co.edu.ff.orders.product.domain.*;
 import co.edu.ff.orders.product.exceptions.ProductDoesNotExist;
-import jdk.net.SocketFlow;
-import org.postgresql.replication.fluent.physical.PhysicalReplicationOptions;
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
@@ -22,13 +20,13 @@ public class SqlProductRepository implements ProductRepository {
     }
 
     private final RowMapper<Product> mapper = (resultSet, i) -> {
-        ProductId id = ProductId.of(resultSet.getLong("ID"));
-        Name name = Name.of(resultSet.getString("PRODUCTNAME"));
-        Description description = Description.of(resultSet.getString("DESCRIPTION"));
-        BasePrice basePrice = BasePrice.of(resultSet.getBigDecimal("BASEPRICE"));
-        TaxRate taxRate = TaxRate.of(resultSet.getBigDecimal("TAXRATE"));
-        ProductStatus status = ProductStatus.valueOf(resultSet.getString("STATUS"));
-        InventoryQuantity inventoryQuantity = InventoryQuantity.of(resultSet.getInt("INVENTORYQUANTITY"));
+        ProductId id = ProductId.of(resultSet.getLong("id"));
+        Name name = Name.of(resultSet.getString("name"));
+        Description description = Description.of(resultSet.getString("description"));
+        BasePrice basePrice = BasePrice.of(resultSet.getBigDecimal("baseprice"));
+        TaxRate taxRate = TaxRate.of(resultSet.getBigDecimal("taxrate"));
+        ProductStatus status = ProductStatus.valueOf(resultSet.getString("status"));
+        InventoryQuantity inventoryQuantity = InventoryQuantity.of(resultSet.getInt("inventoryquantity"));
         return Product.from(id, name, description, basePrice, taxRate, status, inventoryQuantity);
     };
 
@@ -36,18 +34,19 @@ public class SqlProductRepository implements ProductRepository {
     public ProductOperation insertOne(ProductOperationRequest product) {
 
         Map<String, Object> parameters = new HashMap<>();
-        parameters.put("PRODUCTNAME", product.getName().getValue());
-        parameters.put("DESCRIPTION", product.getDescription().getValue());
-        parameters.put("BASEPRICE", product.getBasePrice().getValue());
-        parameters.put("TAXRATE", product.getTaxRate().getValue());
-        parameters.put("STATUS", product.getProductStatus().toString());
-        parameters.put("INVENTORYQUANTITY", product.getInventoryQuantity().getValue());
+        parameters.put("name", product.getName().getValue());
+        parameters.put("description", product.getDescription().getValue());
+        parameters.put("baseprice", product.getBasePrice().getValue());
+        parameters.put("taxrate", product.getTaxRate().getValue());
+        parameters.put("status", product.getProductStatus().toString());
+        parameters.put("inventoryquantity", product.getInventoryQuantity().getValue());
 
-        Long number = (long)(simpleJdbcInsert.executeAndReturnKey(parameters));
-
+        Number number = simpleJdbcInsert.executeAndReturnKey(parameters);
+        //Long id = (long)number; //error de casteo de java.Integer a Java.long
+        Long id = Long.parseLong(String.format("%s",number)); //Find another way
         return ProductOperationSuccess.of(
                 Product.from(
-                        ProductId.of(number),
+                        ProductId.of(id),
                         product.getName(),
                         product.getDescription(),
                         product.getBasePrice(),
@@ -59,7 +58,7 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public Optional<ProductOperation> findByName(Name name) {
-        String SQL = "SELECT ID, PRODUCTNAME, DESCRIPTION, BASEPRICE, TAXRATE, STATUS, INVENTORYQUANTITY FROM PRODUCTS WHERE PRODUCTNAME = ?";
+        String SQL = "SELECT id, name, description, baseprice, taxrate, status, inventoryquantity FROM products WHERE name = ?";
         Object[] objects = {name.getValue()};
         try{
             Product productExistence = jdbcTemplate.queryForObject(SQL, objects, mapper);
@@ -71,7 +70,7 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public Optional<ProductOperation> findById(ProductId id) {
-        String SQL = "SELECT ID, PRODUCTNAME, DESCRIPTION, BASEPRICE, TAXRATE, STATUS, INVENTORYQUANTITY FROM PRODUCTS WHERE ID = ?";
+        String SQL = "SELECT id, name, description, baseprice, taxrate, status, inventoryquantity FROM products WHERE id = ?";
         Object[] objects = {id.getValue()};
         try{
             Product productExistence = jdbcTemplate.queryForObject(SQL, objects, mapper);
@@ -83,15 +82,15 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public List<Product> findAll() {
-        String SQL = "SELECT ID, PRODUCTNAME, DESCRIPTION, BASEPRICE, TAXRATE, STATUS, INVENTORYQUANTITY FROM PRODUCTS";
+        String SQL = "SELECT id, name, description, baseprice, taxrate, status, inventoryquantity FROM products";
         List<Product> products = jdbcTemplate.query(SQL, mapper);
         return products;
     }
 
     @Override
     public ProductOperation updateOne(ProductId id, ProductOperationRequest product) {
-        String SQL = "UPDATE PRODUCTS SET PRODUCTNAME = ?, DESCRIPTION = ?, BASEPRICE = ?, TAXRATE = ?, STATUS = ?, INVENTORYQUANTITY = ?" +
-                "WHERE ID = ?";
+        String SQL = "UPDATE products SET name = ?, description = ?, baseprice = ?, taxrate = ?, status = ?, inventoryquantity = ?" +
+                "WHERE id = ?";
         Number number = jdbcTemplate.update(SQL,
                     product.getName().getValue(),
                     product.getDescription().getValue(),
@@ -112,13 +111,13 @@ public class SqlProductRepository implements ProductRepository {
 
     @Override
     public ProductOperation deleteOne(ProductId id) {
-        String SQL = "DELETE FROM PRODUCTS WHERE ID = ?";
+        String SQL = "DELETE FROM products WHERE id = ?";
         Optional<ProductOperation> product = findById(id);
         if(!product.isPresent()){
             ProductDoesNotExist exception = ProductDoesNotExist.of(id);
             return ProductOperationFailure.of(exception);
         }else{
-            Number number = jdbcTemplate.update(SQL, id.getValue());
+            Number number = jdbcTemplate.update(SQL, id.getValue().intValue());
             return ProductOperationSuccess.of(product.get().value());
         }
     }
