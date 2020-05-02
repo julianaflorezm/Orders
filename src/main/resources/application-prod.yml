@@ -4,3 +4,7 @@ database:
   username: postgres
   password: postgres
   database: orders
+
+elasticsearch:
+  host: localhost
+  port: 9200

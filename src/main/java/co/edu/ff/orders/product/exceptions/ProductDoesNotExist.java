@@ -12,7 +12,7 @@ import javax.security.auth.callback.Callback;
 public class ProductDoesNotExist extends ProductException {
     ProductId productId;
     public ProductDoesNotExist(ProductId productId) {
-       super(String.format("Product %s doesn't exist", productId.getValue()));
+       super(String.format("Product %s does not exist", productId.getValue()));
        this.productId = productId;
     }
 }

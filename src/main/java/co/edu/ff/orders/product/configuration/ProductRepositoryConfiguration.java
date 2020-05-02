@@ -14,7 +14,6 @@ import javax.sql.DataSource;
 public class ProductRepositoryConfiguration {
 
     @Bean
-    @Profile({"dev", "prod"})
     public ProductRepository productRepository(JdbcTemplate jdbcTemplate, DataSource dataSource) {
         SimpleJdbcInsert simpleJdbcInsert = new SimpleJdbcInsert(dataSource)
                 .withTableName("PRODUCTS")

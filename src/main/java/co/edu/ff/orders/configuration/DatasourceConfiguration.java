@@ -27,6 +27,7 @@ public class DatasourceConfiguration {
 
 
     @Bean
+    @Profile({"dev", "prod"})
     public DataSource hikariDatasource(DatabaseCredentials credentials) {
         HikariConfig config = new HikariConfig();
         config.setDataSourceClassName("org.postgresql.ds.PGSimpleDataSource");
